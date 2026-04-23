@@ -131,7 +131,19 @@
   <label for="name-input">Prénom</label>
   <input type="text" id="name-input" placeholder="" autocomplete="given-name" autocorrect="off"/>
 </div>
-
+<div class="day-row">
+  <span class="day-label">Jour préféré</span>
+  <div class="day-options">
+    <label class="day-option">
+      <input type="checkbox" id="day-sam" value="Samedi"/>
+      <span>Samedi matin</span>
+    </label>
+    <label class="day-option">
+      <input type="checkbox" id="day-dim" value="Dimanche"/>
+      <span>Dimanche matin</span>
+    </label>
+  </div>
+</div>
 <div style="position:relative;flex:1;display:flex;flex-direction:column;">
   <div id="map"></div>
   <div class="count-pill" id="count-pill">0 zone sélectionnée</div>
