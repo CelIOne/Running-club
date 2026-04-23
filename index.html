@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club de Course — Zones de départ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --bg: #f4f1eb;
+    --surface: #ffffff;
+    --text: #1a1a18;
+    --muted: #888;
+    --accent: #2a5c45;
+    --accent-light: #d0e8dc;
+    --accent-hover: #1e4334;
+    --border: #e0dcd4;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+  }
+  header { text-align: center; margin-bottom: 1.75rem; max-width: 580px; }
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+  }
+  h1 { font-size: clamp(24px,4vw,34px); font-weight: 300; line-height: 1.15; margin-bottom: 12px; }
+  h1 em { font-style: italic; }
+  .subtitle { font-size: 14px; color: var(--muted); line-height: 1.65; }
+  .form-row {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; max-width: 860px; margin-bottom: 1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+  }
+  .form-row label {
+    font-size: 12px; font-weight: 500; color: var(--muted);
+    white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  input[type="text"] {
+    flex: 1; padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text); outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { border-color: var(--accent); }
+  .map-wrap {
+    width: 100%; max-width: 860px;
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 28px rgba(0,0,0,0.08);
+    position: relative; margin-bottom: 1rem;
+  }
+  #map { height: 580px; width: 100%; background: #eae6de; }
+  .map-hint {
+    position: absolute; top: 12px; right: 12px; z-index: 999;
+    background: rgba(255,255,255,0.92); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; font-size: 11px; color: var(--muted);
+    pointer-events: none;
+  }
+  .count-pill {
+    position: absolute; bottom: 12px; left: 12px; z-index: 999;
+    background: var(--accent); color: white;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    padding: 5px 14px; border-radius: 20px; pointer-events: none;
+  }
+  .legend {
+    position: absolute; bottom: 12px; right: 12px; z-index: 999;
+    background: rgba(255,255,255,0.92); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px; font-size: 11px; color: var(--muted);
+    display: flex; flex-direction: column; gap: 5px; pointer-events: none;
+  }
+  .leg { display: flex; align-items: center; gap: 7px; }
+  .leg-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .leg-dot.d { background: #e8e3d8; border: 1px solid #c8c3b4; }
+  .leg-dot.s { background: #2a5c45; border: 1px solid #1e4334; }
+  .submit-btn {
+    display: block; width: 100%; max-width: 860px; padding: 15px;
+    background: var(--accent); color: white;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+    border: none; border-radius: var(--radius); cursor: pointer;
+    transition: background 0.2s, transform 0.1s; letter-spacing: 0.02em;
+  }
+  .submit-btn:hover { background: var(--accent-hover); }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { background: #aaa; cursor: not-allowed; }
+  #status {
+    max-width: 860px; width: 100%; margin-top: 12px;
+    font-size: 13px; text-align: center; min-height: 20px;
+  }
+  #status.error { color: #c0392b; }
+  #status.success { color: var(--accent); font-weight: 500; }
+  .success-screen {
+    display: none; flex-direction: column; align-items: center;
+    text-align: center; padding: 3rem 2rem; max-width: 400px;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .checkmark {
+    width: 56px; height: 56px; background: var(--accent-light);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 22px; margin-bottom: 1.25rem; color: var(--accent);
+  }
+  .success-screen h2 { font-size: 22px; font-weight: 400; margin-bottom: 10px; }
+  .success-screen p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .leaflet-control-attribution { display: none; }
+  #loading-overlay {
+    position: absolute; inset: 0; z-index: 1000;
+    background: rgba(244,241,235,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+  }
+  #loading-overlay p { font-size: 13px; color: var(--muted); }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Running Club · Sondage</div>
+  <h1>D'où peux-tu<br><em>rejoindre le groupe ?</em></h1>
+  <p class="subtitle">Clique sur toutes les communes depuis lesquelles tu peux partir courir le matin. Tu peux en sélectionner plusieurs.</p>
+</header>
+
+<div id="main-content" style="width:100%;max-width:860px;display:flex;flex-direction:column;align-items:center;">
+  <div class="form-row">
+    <label for="name-input">Prénom</label>
+    <input type="text" id="name-input" placeholder="ex : Sophie" autocomplete="given-name"/>
+  </div>
+
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div id="loading-overlay">
+      <div class="spinner"></div>
+      <p>Chargement de la carte…</p>
+    </div>
+    <div class="map-hint">Scroll pour zoomer · Clic pour sélectionner</div>
+    <div class="count-pill" id="count-pill">0 zone sélectionnée</div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot d"></div> Non sélectionnée</div>
+      <div class="leg"><div class="leg-dot s"></div> Sélectionnée</div>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="handleSubmit()">Valider mes zones →</button>
+  <div id="status"></div>
+</div>
+
+<div class="success-screen" id="success-screen">
+  <div class="checkmark">✓</div>
+  <h2>Merci !</h2>
+  <p>Tes zones ont bien été enregistrées.<br>On te tient au courant des prochaines sorties !</p>
+</div>
+
+<script>
+const AIRTABLE_TOKEN = 'pat1j9xBXbgqOvRq6.82c324e0f4b7900cded1400b504d47884589e6682348d76294dbefc6f95d49c5';
+const BASE_ID = 'appXUsxLco2LE8MVG';
+const TABLE = 'Réponse-carte';
+
+const selected = new Set();
+const geoLayers = {};
+
+const map = L.map('map', {
+  center: [48.856, 2.35],
+  zoom: 11,
+  zoomControl: true,
+  scrollWheelZoom: true
+});
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+  subdomains: 'abcd', maxZoom: 17
+}).addTo(map);
+
+const sDefault  = { fillColor:'#e8e3d8', fillOpacity:0.55, color:'#9a9488', weight:1.4 };
+const sHover    = { fillColor:'#b8d4c8', fillOpacity:0.75, color:'#6a9e8e', weight:1.8 };
+const sSelected = { fillColor:'#2a5c45', fillOpacity:0.65, color:'#1c3d2e', weight:2.2 };
+
+function updateCount() {
+  const n = selected.size;
+  document.getElementById('count-pill').textContent =
+    n + ' zone' + (n !== 1 ? 's' : '') + ' sélectionnée' + (n !== 1 ? 's' : '');
+}
+
+const labelPane = map.createPane('labels');
+labelPane.style.zIndex = 650;
+labelPane.style.pointerEvents = 'none';
+
+const labelMarkers = {};
+
+function getName(props) {
+  return props.nom || props.NOM_COM || props.name || props.libelle || 'Zone';
+}
+
+function makeLabel(layer, name) {
+  const center = layer.getBounds().getCenter();
+  const zoom = map.getZoom();
+  const fs = zoom >= 13 ? 11 : zoom >= 12 ? 9 : 7;
+  const isSelected = selected.has(name);
+  return L.marker(center, {
+    pane: 'labels',
+    interactive: false,
+    icon: L.divIcon({
+      className: '',
+      html: `<span style="
+        font-family:'DM Sans',sans-serif;
+        font-size:${fs}px;
+        font-weight:300;
+        color:${isSelected ? 'rgba(255,255,255,0.7)' : 'rgba(40,36,28,0.35)'};
+        letter-spacing:0.04em;
+        white-space:nowrap;
+        display:block;
+        transform:translateX(-50%);
+        pointer-events:none;
+        text-align:center;
+      ">${name}</span>`,
+      iconSize: [0,0], iconAnchor: [0,0]
+    })
+  });
+}
+
+function refreshLabel(name, layer) {
+  if (labelMarkers[name]) map.removeLayer(labelMarkers[name]);
+  labelMarkers[name] = makeLabel(layer, name).addTo(map);
+}
+
+map.on('zoomend', () => {
+  Object.entries(geoLayers).forEach(([name, layer]) => refreshLabel(name, layer));
+});
+
+function onEachFeature(feature, layer) {
+  const name = getName(feature.properties);
+  geoLayers[name] = layer;
+  layer._zoneName = name;
+  layer.setStyle(sDefault);
+
+  layer.on('mouseover', function() { if (!selected.has(name)) this.setStyle(sHover); });
+  layer.on('mouseout',  function() { if (!selected.has(name)) this.setStyle(sDefault); });
+  layer.on('click', function() {
+    if (selected.has(name)) { selected.delete(name); this.setStyle(sDefault); }
+    else { selected.add(name); this.setStyle(sSelected); }
+    refreshLabel(name, layer);
+    updateCount();
+  });
+}
+
+async function loadGeoJSON() {
+  const depts = ['75','92','93','94'];
+  const base = 'https://cdn.jsdelivr.net/gh/gregoiredavid/france-geojson@master/communes';
+  let loaded = 0;
+
+  await Promise.all(depts.map(async d => {
+    try {
+      const res = await fetch(`${base}/departement-${d}/communes-${d}.geojson`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      L.geoJSON(data, { style: sDefault, onEachFeature }).addTo(map);
+      data.features.forEach(f => {
+        const name = getName(f.properties);
+        if (geoLayers[name]) refreshLabel(name, geoLayers[name]);
+      });
+      loaded++;
+    } catch(e) {
+      console.warn('Erreur dept', d, e);
+    }
+  }));
+
+  document.getElementById('loading-overlay').style.display = 'none';
+
+  if (loaded === 0) {
+    document.getElementById('loading-overlay').innerHTML =
+      '<p style="color:#c0392b;padding:1rem;text-align:center;">Impossible de charger la carte.<br>Vérifie ta connexion.</p>';
+    document.getElementById('loading-overlay').style.display = 'flex';
+  }
+}
+
+loadGeoJSON();
+
+async function handleSubmit() {
+  const name = document.getElementById('name-input').value.trim();
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('status');
+
+  if (!name) { status.className='error'; status.textContent='Entre ton prénom.'; return; }
+  if (selected.size === 0) { status.className='error'; status.textContent='Sélectionne au moins une zone.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+  status.className = ''; status.textContent = '';
+
+  try {
+    const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ records: [{ fields: {
+        "Prénom": name,
+        "Zones": [...selected].join(', '),
+        "Nombre de zones": selected.size,
+        "Date": new Date().toISOString().split('T')[0]
+      }}]})
+    });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur Airtable'); }
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'flex';
+  } catch(e) {
+    status.className='error';
+    status.textContent='Erreur : ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Valider mes zones →';
+  }
+}
+</script>
+</body>
+</html>
