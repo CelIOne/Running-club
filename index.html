@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Club de Course — Zones de départ</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -13,62 +13,130 @@
     --accent:#2a5c45; --accent-light:#d0e8dc; --accent-hover:#1e4334;
     --border:#e0dcd4; --radius:14px;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem}
-  header{text-align:center;margin-bottom:1.75rem;max-width:580px}
-  .eyebrow{font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-  h1{font-size:clamp(24px,4vw,34px);font-weight:300;line-height:1.15;margin-bottom:12px}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+
+  /* HEADER */
+  .top-bar{
+    padding:16px 20px 12px;
+    background:var(--bg);
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .eyebrow{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  h1{font-size:20px;font-weight:300;line-height:1.2;margin-bottom:4px}
   h1 em{font-style:italic}
-  .subtitle{font-size:14px;color:var(--muted);line-height:1.65}
-  .form-row{display:flex;align-items:center;gap:10px;width:100%;max-width:860px;margin-bottom:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem}
-  .form-row label{font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
-  input[type=text]{flex:1;padding:8px 12px;font-family:"DM Sans",sans-serif;font-size:15px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;transition:border-color .2s}
+  .subtitle{font-size:12px;color:var(--muted);line-height:1.5}
+
+  /* NAME INPUT */
+  .name-row{
+    display:flex;align-items:center;gap:10px;
+    padding:10px 16px;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .name-row label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+  input[type=text]{
+    flex:1;padding:9px 12px;
+    font-family:"DM Sans",sans-serif;font-size:16px;
+    border:1px solid var(--border);border-radius:8px;
+    background:var(--bg);color:var(--text);outline:none;
+    -webkit-appearance:none;
+  }
   input[type=text]:focus{border-color:var(--accent)}
-  .map-wrap{width:100%;max-width:860px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:0 2px 28px rgba(0,0,0,.08);position:relative;margin-bottom:1rem}
-  #map{height:600px;width:100%;background:#eae6de}
-  .map-hint{position:absolute;top:12px;right:12px;z-index:999;background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--muted);pointer-events:none}
-  .count-pill{position:absolute;bottom:12px;left:12px;z-index:999;background:var(--accent);color:#fff;font-family:"DM Mono",monospace;font-size:12px;padding:5px 14px;border-radius:20px;pointer-events:none}
-  .legend{position:absolute;bottom:12px;right:12px;z-index:999;background:rgba(255,255,255,.92);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:5px;pointer-events:none}
+
+  /* MAP — takes all remaining space */
+  #map{
+    flex:1;
+    width:100%;
+    background:#eae6de;
+    position:relative;
+    z-index:0;
+  }
+
+  /* OVERLAYS ON MAP */
+  .count-pill{
+    position:absolute;bottom:100px;left:12px;z-index:999;
+    background:var(--accent);color:#fff;
+    font-family:"DM Mono",monospace;font-size:12px;
+    padding:6px 14px;border-radius:20px;pointer-events:none;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  .legend{
+    position:absolute;bottom:100px;right:12px;z-index:999;
+    background:rgba(255,255,255,.95);border:1px solid var(--border);
+    border-radius:10px;padding:8px 12px;font-size:11px;color:var(--muted);
+    display:flex;flex-direction:column;gap:5px;pointer-events:none;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+  }
   .leg{display:flex;align-items:center;gap:7px}
   .leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
   .leg-dot.d{background:#e8e3d8;border:1px solid #c8c3b4}
   .leg-dot.s{background:#2a5c45;border:1px solid #1e4334}
-  .submit-btn{display:block;width:100%;max-width:860px;padding:15px;background:var(--accent);color:#fff;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:500;border:none;border-radius:var(--radius);cursor:pointer;transition:background .2s,transform .1s;letter-spacing:.02em}
-  .submit-btn:hover{background:var(--accent-hover)}
-  .submit-btn:active{transform:scale(.99)}
+
+  /* BOTTOM BAR */
+  .bottom-bar{
+    padding:12px 16px;
+    background:var(--bg);
+    border-top:1px solid var(--border);
+    flex-shrink:0;
+    padding-bottom:max(12px, env(safe-area-inset-bottom));
+  }
+  .submit-btn{
+    display:block;width:100%;padding:16px;
+    background:var(--accent);color:#fff;
+    font-family:"DM Sans",sans-serif;font-size:16px;font-weight:500;
+    border:none;border-radius:var(--radius);cursor:pointer;
+    transition:background .2s;letter-spacing:.02em;
+    -webkit-appearance:none;
+  }
+  .submit-btn:active{background:var(--accent-hover)}
   .submit-btn:disabled{background:#aaa;cursor:not-allowed}
-  #status{max-width:860px;width:100%;margin-top:12px;font-size:13px;text-align:center;min-height:20px}
+  #status{font-size:12px;text-align:center;margin-top:8px;min-height:16px;color:var(--muted)}
   #status.error{color:#c0392b}
-  .success-screen{display:none;flex-direction:column;align-items:center;text-align:center;padding:3rem 2rem;max-width:400px;animation:fadeIn .4s ease}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-  .checkmark{width:56px;height:56px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:1.25rem;color:var(--accent)}
-  .success-screen h2{font-size:22px;font-weight:400;margin-bottom:10px}
-  .success-screen p{font-size:14px;color:var(--muted);line-height:1.6}
+
+  /* SUCCESS */
+  .success-screen{
+    display:none;position:fixed;inset:0;z-index:9999;
+    background:var(--bg);
+    flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:2rem;
+    animation:fadeIn .4s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .checkmark{width:64px;height:64px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1.5rem;color:var(--accent)}
+  .success-screen h2{font-size:24px;font-weight:400;margin-bottom:10px}
+  .success-screen p{font-size:15px;color:var(--muted);line-height:1.6;max-width:280px}
+
   .leaflet-control-attribution{display:none}
+  .leaflet-control-zoom{margin-bottom:96px !important}
 </style>
 </head>
 <body>
 
-<header>
+<div class="top-bar">
   <div class="eyebrow">Running Club · Sondage</div>
-  <h1>D'où peux-tu<br><em>rejoindre le groupe ?</em></h1>
-  <p class="subtitle">Clique sur toutes les zones depuis lesquelles tu peux partir courir le matin. Tu peux en sélectionner plusieurs.</p>
-</header>
+  <h1>D'où peux-tu <em>rejoindre le groupe ?</em></h1>
+  <p class="subtitle">Clique sur toutes les zones depuis lesquelles tu peux partir courir le matin.</p>
+</div>
 
-<div id="main-content" style="width:100%;max-width:860px;display:flex;flex-direction:column;align-items:center;">
-  <div class="form-row">
-    <label for="name-input">Prénom</label>
-    <input type="text" id="name-input" placeholder="ex : Sophie" autocomplete="given-name"/>
+<div class="name-row">
+  <label for="name-input">Prénom</label>
+  <input type="text" id="name-input" placeholder="ex : Sophie" autocomplete="given-name" autocorrect="off"/>
+</div>
+
+<div style="position:relative;flex:1;display:flex;flex-direction:column;">
+  <div id="map"></div>
+  <div class="count-pill" id="count-pill">0 zone sélectionnée</div>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot d"></div> Non sélectionnée</div>
+    <div class="leg"><div class="leg-dot s"></div> Sélectionnée</div>
   </div>
-  <div class="map-wrap">
-    <div id="map"></div>
-    <div class="map-hint">Scroll pour zoomer · Clic pour sélectionner</div>
-    <div class="count-pill" id="count-pill">0 zone sélectionnée</div>
-    <div class="legend">
-      <div class="leg"><div class="leg-dot d"></div> Non sélectionnée</div>
-      <div class="leg"><div class="leg-dot s"></div> Sélectionnée</div>
-    </div>
-  </div>
+</div>
+
+<div class="bottom-bar">
   <button class="submit-btn" id="submit-btn" onclick="handleSubmit()">Valider mes zones →</button>
   <div id="status"></div>
 </div>
@@ -92,9 +160,11 @@ const labelMarkers = {};
 
 const map = L.map('map', {
   center: [48.845, 2.370],
-  zoom: 12,
+  zoom: 11,
   zoomControl: true,
-  scrollWheelZoom: true
+  scrollWheelZoom: true,
+  tap: true,
+  tapTolerance: 15
 });
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
@@ -118,14 +188,14 @@ labelPane.style.pointerEvents = 'none';
 function makeLabel(layer, name) {
   const center = layer.getBounds().getCenter();
   const zoom = map.getZoom();
-  const fs = zoom >= 14 ? 12 : zoom >= 13 ? 10 : zoom >= 12 ? 9 : 8;
+  const fs = zoom >= 14 ? 12 : zoom >= 13 ? 10 : zoom >= 12 ? 8 : 7;
   const isSel = selected.has(name);
   return L.marker(center, {
     pane: 'labels',
     interactive: false,
     icon: L.divIcon({
       className: '',
-      html: `<span style="font-family:'DM Sans',sans-serif;font-size:${fs}px;font-weight:300;color:${isSel ? 'rgba(255,255,255,0.75)' : 'rgba(40,36,28,0.38)'};letter-spacing:.04em;white-space:nowrap;display:block;transform:translateX(-50%);pointer-events:none;text-align:center;">${name}</span>`,
+      html: `<span style="font-family:'DM Sans',sans-serif;font-size:${fs}px;font-weight:300;color:${isSel ? 'rgba(255,255,255,0.8)' : 'rgba(40,36,28,0.4)'};letter-spacing:.04em;white-space:nowrap;display:block;transform:translateX(-50%);pointer-events:none;text-align:center;">${name}</span>`,
       iconSize:[0,0], iconAnchor:[0,0]
     })
   });
@@ -159,7 +229,6 @@ L.geoJSON(ZONES, {
   }
 }).addTo(map);
 
-
 async function handleSubmit() {
   const name = document.getElementById('name-input').value.trim();
   const btn = document.getElementById('submit-btn');
@@ -183,7 +252,6 @@ async function handleSubmit() {
       }}]})
     });
     if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur Airtable'); }
-    document.getElementById('main-content').style.display = 'none';
     document.getElementById('success-screen').style.display = 'flex';
   } catch(e) {
     status.className = 'error';
