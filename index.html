@@ -247,12 +247,12 @@ STATIONS.features.forEach(function(feat) {
 
   const marker = L.circleMarker(latlng, {
     pane: 'stations',
-    radius: isRER ? 3.5 : 3,
-    fillColor: '#ffffff',
-    color: color,
-    weight: isRER ? 1.5 : 1.5,
-    opacity: 0.45,
-    fillOpacity: 0.5
+radius: map.getZoom() <= 11 ? 0.8 : isRER ? 3.5 : 3,
+fillColor: '#ffffff',
+color: color,
+weight: 1.5,
+opacity: map.getZoom() <= 11 ? 0.15 : 0.45,
+fillOpacity: map.getZoom() <= 11 ? 0.15 : 0.5
   }).addTo(map);
 
   marker.bindTooltip(`<strong>${nom}</strong><br/><span style="color:${color}">${ligne}</span>`, {
