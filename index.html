@@ -31,7 +31,7 @@
   .subtitle{font-size:12px;color:var(--muted);line-height:1.5}
 
   /* NAME INPUT */
-  .name-row{display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;justify-content:center;}
+  
   .name-row label{font-size:11px;font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0;white-space:nowrap}
   input[type=text]{
     flex:1;padding:9px 12px;
@@ -105,19 +105,14 @@
   .success-screen h2{font-size:24px;font-weight:400;margin-bottom:10px}
   .success-screen p{font-size:15px;color:var(--muted);line-height:1.6;max-width:280px}
 
-  .day-option input[type=checkbox]{
-    appearance:none;-webkit-appearance:none;
-    width:18px;height:18px;border-radius:5px;
-    border:2px solid #5fd3c8;
-    background:#fff;cursor:pointer;
-    transition:background .15s;flex-shrink:0;
-  }
-  .day-option input[type=checkbox]:checked{
-    background:#5fd3c8;border-color:#5fd3c8;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;background-position:center;background-size:70%;
-  }
-  .day-option{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:14px;color:var(--text)}
+
+  .fields-wrap{background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .fields-row{display:flex;align-items:center;gap:12px;padding:8px 16px;justify-content:center;}
+  .fields-row label{font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap;font-family:'Poppins',sans-serif;}
+  .fields-row input[type=text]{flex:1;max-width:200px;padding:8px 12px;font-family:'Poppins',sans-serif;font-size:15px;border:none;border-radius:8px;background:#f0f0f0;color:var(--text);outline:none;}
+  .day-option{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:var(--text);font-family:'Poppins',sans-serif;}
+  .day-option input[type=checkbox]{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:5px;border:2px solid #5fd3c8;background:#fff;cursor:pointer;transition:background .15s;flex-shrink:0;}
+  .day-option input[type=checkbox]:checked{background:#5fd3c8;border-color:#5fd3c8;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:70%;}
   .leaflet-control-attribution{display:none}
 
   .station-tooltip { font-family: 'Poppins', sans-serif; font-size: 11px; padding: 4px 8px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
@@ -134,19 +129,30 @@
   <p class="subtitle">Sélectionne les zones vers lesquelles tu peux te déplacer pour rejoindre le groupe.</p>
 </div>
 
-<div class="name-row">
-  <label for="name-input">Prénom</label>
-  <input type="text" id="name-input" placeholder="" autocomplete="given-name" autocorrect="off"/>
-  <div style="width:100%;display:flex;align-items:center;gap:14px;justify-content:center;padding-top:8px;">
-    <label style="font-size:12px;font-weight:500;color:var(--muted);font-family:'Poppins',sans-serif;">Jour préféré</label>
+<div class="fields-wrap">
+  <div class="fields-row">
+    <label for="name-input">Prénom</label>
+    <input type="text" id="name-input" placeholder="" autocomplete="given-name" autocorrect="off"/>
+  </div>
+  <div class="fields-row">
+    <label>Jour préféré</label>
     <label class="day-option">
       <input type="checkbox" id="day-sam" value="Samedi"/>
-      <span style="font-family:'Poppins',sans-serif;font-size:14px;color:var(--text);">Samedi</span>
+      <span>Samedi</span>
     </label>
     <label class="day-option">
       <input type="checkbox" id="day-dim" value="Dimanche"/>
-      <span style="font-family:'Poppins',sans-serif;font-size:14px;color:var(--text);">Dimanche</span>
+      <span>Dimanche</span>
     </label>
+  </div>
+</div>
+</div>
+<div style="position:relative;flex:1;display:flex;flex-direction:column;">
+  <div id="map"></div>
+  <div class="count-pill" id="count-pill">0 zone sélectionnée</div>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot d"></div> Non sélectionnée</div>
+    <div class="leg"><div class="leg-dot s"></div> Sélectionnée</div>
   </div>
 </div>
 
@@ -307,8 +313,7 @@ async function handleSubmit() {
         "Prénom": name,
         "Zones": [...selected].join(', '),
         "Nombre de zones": selected.size,
-        "Date": new Date().toISOString().split('T')[0],
-        "Jour préféré": [document.getElementById('day-sam')?.checked ? 'Samedi' : null, document.getElementById('day-dim')?.checked ? 'Dimanche' : null].filter(Boolean).join(' et ')
+        "Date": new Date().toISOString().split('T')[0]
       }}]})
     });
     if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur Airtable'); }
