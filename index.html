@@ -297,7 +297,7 @@ async function handleSubmit() {
       body: JSON.stringify({ records: [{ fields: {
         "Prénom": name,
         "Zones": [...selected].join(', '),
-        "Nombre de zone": selected.size,
+        "Nombre de zones": selected.size,
         "Date": new Date().toISOString().split('T')[0]
       }}]})
     });
