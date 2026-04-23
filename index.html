@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club de Course — Zones de départ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --text: #1a1a1a;
+    --muted: #888;
+    --accent: #2a6049;
+    --accent-light: #d4e9e1;
+    --zone-default: #e8e4dc;
+    --zone-default-stroke: #c8c4bc;
+    --zone-hover: #c5dbd3;
+    --zone-selected: #2a6049;
+    --zone-selected-stroke: #1e4534;
+    --zone-label: #555;
+    --zone-label-selected: #ffffff;
+    --border: #ddd;
+    --radius: 12px;
+    --success: #2a6049;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+    max-width: 560px;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 300;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  h1 strong { font-weight: 500; }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 1rem;
+  }
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  .map-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 1rem;
+  }
+
+  .map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .map-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .count-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  svg#map {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .zone {
+    fill: var(--zone-default);
+    stroke: var(--zone-default-stroke);
+    stroke-width: 0.7;
+    cursor: pointer;
+    transition: fill 0.15s;
+  }
+
+  .zone:hover { fill: var(--zone-hover); }
+  .zone.selected { fill: var(--zone-selected); stroke: var(--zone-selected-stroke); stroke-width: 1.2; }
+
+  .zone-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 5.2px;
+    fill: var(--zone-label);
+    pointer-events: none;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-weight: 400;
+  }
+
+  .zone.selected + .zone-label,
+  .zone-label.on-selected { fill: var(--zone-label-selected); }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+  }
+
+  .leg { display: flex; align-items: center; gap: 6px; }
+  .leg-dot { width: 12px; height: 12px; border-radius: 3px; border: 1px solid transparent; flex-shrink: 0; }
+  .leg-dot.default { background: var(--zone-default); border-color: var(--zone-default-stroke); }
+  .leg-dot.selected { background: var(--zone-selected); border-color: var(--zone-selected-stroke); }
+
+  .submit-btn {
+    display: block;
+    width: 100%;
+    max-width: 680px;
+    padding: 14px;
+    background: var(--accent);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.02em;
+  }
+
+  .submit-btn:hover { background: #1e4534; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+
+  #status {
+    max-width: 680px;
+    width: 100%;
+    margin-top: 12px;
+    font-size: 13px;
+    text-align: center;
+    min-height: 20px;
+    color: var(--muted);
+  }
+
+  #status.success { color: var(--success); font-weight: 500; }
+  #status.error { color: #c0392b; }
+
+  .success-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    max-width: 400px;
+  }
+
+  .checkmark {
+    width: 52px;
+    height: 52px;
+    background: var(--accent-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 1rem;
+  }
+
+  .success-screen h2 { font-size: 20px; font-weight: 500; margin-bottom: 8px; }
+  .success-screen p { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Running Club</div>
+  <h1>D'où peux-tu<br><strong>rejoindre le groupe ?</strong></h1>
+  <p class="subtitle">Clique sur toutes les zones depuis lesquelles tu peux partir pour courir. Tu peux en sélectionner plusieurs.</p>
+</header>
+
+<div id="main-content">
+  <div class="card">
+    <div class="field-label">Ton prénom</div>
+    <input type="text" id="name-input" placeholder="ex : Sophie" autocomplete="given-name" />
+  </div>
+
+  <div class="map-card">
+    <div class="map-header">
+      <span class="map-title">Paris & petite couronne</span>
+      <span class="count-badge" id="count-badge">0 zone sélectionnée</span>
+    </div>
+
+    <svg id="map" viewBox="0 0 800 780" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <div class="legend">
+      <div class="leg"><div class="leg-dot default"></div> Non sélectionnée</div>
+      <div class="leg"><div class="leg-dot selected"></div> Sélectionnée</div>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="handleSubmit()">Valider mes zones →</button>
+  <div id="status"></div>
+</div>
+
+<div class="success-screen" id="success-screen">
+  <div class="checkmark">✓</div>
+  <h2>Merci !</h2>
+  <p>Tes zones ont bien été enregistrées. On te tient au courant des prochaines sorties !</p>
+</div>
+
+<script>
+const AIRTABLE_TOKEN = 'pat1j9xBXbgqOvRq6.82c324e0f4b7900cded1400b504d47884589e6682348d76294dbefc6f95d49c5';
+const BASE_ID = 'appXUsxLco2LE8MVG';
+const TABLE = 'Réponse-carte';
+
+const zones = [
+  {id:"p01",name:"1er",cx:390,cy:338,w:22,h:18},
+  {id:"p02",name:"2e",cx:400,cy:322,w:20,h:16},
+  {id:"p03",name:"3e",cx:416,cy:318,w:20,h:16},
+  {id:"p04",name:"4e",cx:410,cy:332,w:22,h:18},
+  {id:"p05",name:"5e",cx:400,cy:352,w:24,h:18},
+  {id:"p06",name:"6e",cx:382,cy:354,w:24,h:18},
+  {id:"p07",name:"7e",cx:364,cy:346,w:28,h:22},
+  {id:"p08",name:"8e",cx:362,cy:316,w:34,h:24},
+  {id:"p09",name:"9e",cx:385,cy:300,w:28,h:20},
+  {id:"p10",name:"10e",cx:415,cy:298,w:28,h:22},
+  {id:"p11",name:"11e",cx:432,cy:322,w:28,h:24},
+  {id:"p12",name:"12e",cx:448,cy:350,w:34,h:30},
+  {id:"p13",name:"13e",cx:418,cy:384,w:38,h:28},
+  {id:"p14",name:"14e",cx:382,cy:384,w:36,h:28},
+  {id:"p15",name:"15e",cx:352,cy:376,w:36,h:36},
+  {id:"p16",name:"16e",cx:320,cy:340,w:40,h:44},
+  {id:"p17",name:"17e",cx:360,cy:288,w:40,h:30},
+  {id:"p18",name:"18e",cx:390,cy:268,w:42,h:30},
+  {id:"p19",name:"19e",cx:424,cy:272,w:34,h:32},
+  {id:"p20",name:"20e",cx:450,cy:300,w:30,h:32},
+  {id:"saint-ouen",name:"Saint-Ouen",cx:376,cy:236,w:36,h:22},
+  {id:"clichy",name:"Clichy",cx:346,cy:244,w:32,h:20},
+  {id:"levallois",name:"Levallois",cx:318,cy:260,w:34,h:20},
+  {id:"neuilly",name:"Neuilly-s-Seine",cx:294,cy:290,w:38,h:28},
+  {id:"courbevoie",name:"Courbevoie",cx:278,cy:268,w:36,h:24},
+  {id:"nanterre",name:"Nanterre",cx:242,cy:298,w:44,h:30},
+  {id:"puteaux",name:"Puteaux",cx:270,cy:308,w:30,h:20},
+  {id:"suresnes",name:"Suresnes",cx:274,cy:332,w:32,h:22},
+  {id:"rueil",name:"Rueil-Malmaison",cx:222,cy:340,w:56,h:30},
+  {id:"boulogne",name:"Boulogne-B.",cx:292,cy:368,w:36,h:28},
+  {id:"issy",name:"Issy-les-M.",cx:320,cy:402,w:34,h:22},
+  {id:"vanves",name:"Vanves",cx:344,cy:420,w:26,h:18},
+  {id:"malakoff",name:"Malakoff",cx:358,cy:438,w:26,h:18},
+  {id:"montrouge",name:"Montrouge",cx:384,cy:436,w:28,h:18},
+  {id:"gentilly",name:"Gentilly",cx:406,cy:420,w:24,h:16},
+  {id:"kremlin",name:"Le Kremlin-B.",cx:420,cy:410,w:30,h:18},
+  {id:"ivry",name:"Ivry-sur-Seine",cx:440,cy:418,w:32,h:22},
+  {id:"charenton",name:"Charenton",cx:458,cy:396,w:30,h:20},
+  {id:"saint-mande",name:"Saint-Mandé",cx:468,cy:366,w:26,h:18},
+  {id:"vincennes",name:"Vincennes",cx:484,cy:346,w:28,h:22},
+  {id:"saint-maurice",name:"Saint-Maurice",cx:478,cy:390,w:26,h:18},
+  {id:"maisons-alfort",name:"Maisons-Alfort",cx:478,cy:424,w:34,h:22},
+  {id:"alfortville",name:"Alfortville",cx:460,cy:440,w:28,h:20},
+  {id:"vitry",name:"Vitry-sur-Seine",cx:444,cy:462,w:36,h:26},
+  {id:"villejuif",name:"Villejuif",cx:414,cy:456,w:28,h:20},
+  {id:"arcueil",name:"Arcueil",cx:396,cy:454,w:24,h:16},
+  {id:"cachan",name:"Cachan",cx:380,cy:464,w:26,h:18},
+  {id:"bagneux",name:"Bagneux",cx:360,cy:460,w:28,h:20},
+  {id:"chatillon",name:"Châtillon",cx:346,cy:454,w:26,h:18},
+  {id:"clamart",name:"Clamart",cx:318,cy:452,w:36,h:26},
+  {id:"meudon",name:"Meudon",cx:286,cy:432,w:40,h:28},
+  {id:"sevres",name:"Sèvres",cx:290,cy:398,w:32,h:22},
+  {id:"saint-cloud",name:"Saint-Cloud",cx:278,cy:366,w:32,h:24},
+  {id:"garches",name:"Garches",cx:246,cy:356,w:32,h:22},
+  {id:"vaucresson",name:"Vaucresson",cx:228,cy:386,w:34,h:22},
+  {id:"marnes",name:"Marnes-la-Coq.",cx:216,cy:414,w:38,h:22},
+  {id:"ville-avray",name:"Ville-d'Avray",cx:238,cy:432,w:36,h:20},
+  {id:"chaville",name:"Chaville",cx:258,cy:456,w:30,h:20},
+  {id:"aubervilliers",name:"Aubervilliers",cx:414,cy:234,w:34,h:22},
+  {id:"saint-denis",name:"Saint-Denis",cx:390,cy:210,w:38,h:26},
+  {id:"la-courneuve",name:"La Courneuve",cx:432,cy:208,w:34,h:22},
+  {id:"stains",name:"Stains",cx:454,cy:190,w:30,h:20},
+  {id:"drancy",name:"Drancy",cx:466,cy:212,w:30,h:22},
+  {id:"pantin",name:"Pantin",cx:440,cy:254,w:28,h:20},
+  {id:"les-lilas",name:"Les Lilas",cx:460,cy:278,w:24,h:18},
+  {id:"bagnolet",name:"Bagnolet",cx:462,cy:302,w:24,h:18},
+  {id:"montreuil",name:"Montreuil",cx:480,cy:310,w:32,h:28},
+  {id:"fontenay",name:"Fontenay-s-Bois",cx:496,cy:348,w:34,h:22},
+  {id:"nogent",name:"Nogent-s-Marne",cx:504,cy:378,w:38,h:22},
+  {id:"bobigny",name:"Bobigny",cx:476,cy:226,w:36,h:26},
+  {id:"bondy",name:"Bondy",cx:498,cy:254,w:30,h:22},
+  {id:"noisy-le-sec",name:"Noisy-le-Sec",cx:492,cy:278,w:30,h:18},
+  {id:"romainville",name:"Romainville",cx:478,cy:285,w:28,h:16},
+  {id:"pre-saint-gervais",name:"Pré-St-Gervais",cx:452,cy:270,w:28,h:16},
+  {id:"villemomble",name:"Villemomble",cx:510,cy:302,w:30,h:18},
+  {id:"rosny",name:"Rosny-s-Bois",cx:516,cy:318,w:34,h:20},
+  {id:"neuilly-plaisance",name:"Neuilly-Plaisance",cx:520,cy:338,w:36,h:18},
+  {id:"le-perreux",name:"Le Perreux",cx:520,cy:360,w:32,h:20},
+  {id:"bry",name:"Bry-sur-Marne",cx:530,cy:382,w:30,h:20},
+  {id:"champigny",name:"Champigny-s-M.",cx:526,cy:412,w:40,h:24},
+  {id:"joinville",name:"Joinville-le-Pont",cx:500,cy:400,w:28,h:18},
+  {id:"creteil",name:"Créteil",cx:500,cy:448,w:38,h:30},
+  {id:"villiers-marne",name:"Villiers-s-Marne",cx:538,cy:360,w:36,h:18},
+  {id:"gennevilliers",name:"Gennevilliers",cx:340,cy:212,w:40,h:28},
+  {id:"villeneuve-la-garenne",name:"Villeneuve-la-G.",cx:364,cy:196,w:36,h:22},
+  {id:"ile-saint-denis",name:"Île-St-Denis",cx:390,cy:190,w:24,h:16},
+  {id:"asnieres",name:"Asnières-s-Seine",cx:350,cy:236,w:36,h:22},
+  {id:"colombes",name:"Colombes",cx:308,cy:222,w:38,h:26},
+  {id:"bois-colombes",name:"Bois-Colombes",cx:314,cy:244,w:30,h:18},
+  {id:"la-garenne",name:"La Garenne-Col.",cx:300,cy:256,w:34,h:18},
+  {id:"epinay",name:"Épinay-s-Seine",cx:330,cy:182,w:36,h:22},
+  {id:"villetaneuse",name:"Villetaneuse",cx:366,cy:172,w:32,h:18},
+  {id:"pierrefitte",name:"Pierrefitte-s-S.",cx:396,cy:168,w:34,h:18},
+  {id:"dugny",name:"Dugny",cx:452,cy:164,w:28,h:18},
+  {id:"le-bourget",name:"Le Bourget",cx:476,cy:172,w:30,h:20},
+  {id:"montfermeil",name:"Montfermeil",cx:560,cy:282,w:32,h:18},
+  {id:"noisy-le-grand",name:"Noisy-le-Grand",cx:550,cy:344,w:36,h:20},
+  {id:"gournay",name:"Gournay-s-Marne",cx:546,cy:364,w:36,h:18},
+  {id:"fontenay-aux-roses",name:"Fontenay-aux-R.",cx:358,cy:476,w:32,h:18},
+  {id:"le-plessis-robinson",name:"Le Plessis-Rob.",cx:330,cy:474,w:36,h:18},
+  {id:"sceaux",name:"Sceaux",cx:352,cy:494,w:28,h:18},
+  {id:"bourg-la-reine",name:"Bourg-la-Reine",cx:380,cy:484,w:30,h:18},
+  {id:"antony",name:"Antony",cx:374,cy:514,w:34,h:22},
+  {id:"chatenay",name:"Châtenay-Malabry",cx:326,cy:504,w:42,h:20},
+  {id:"fresnes",name:"Fresnes",cx:396,cy:510,w:28,h:18},
+  {id:"rungis",name:"Rungis",cx:430,cy:510,w:26,h:18},
+  {id:"hay-les-roses",name:"L'Haÿ-les-Roses",cx:406,cy:484,w:34,h:18},
+  {id:"chevilly",name:"Chevilly-Larue",cx:432,cy:486,w:32,h:18},
+  {id:"thiais",name:"Thiais",cx:452,cy:508,w:28,h:20},
+  {id:"choisy-le-roi",name:"Choisy-le-Roi",cx:466,cy:490,w:32,h:20},
+  {id:"orly",name:"Orly",cx:440,cy:536,w:26,h:18},
+  {id:"villeneuve-saint-georges",name:"Villeneuve-St-G.",cx:478,cy:516,w:38,h:20},
+  {id:"valenton",name:"Valenton",cx:500,cy:488,w:28,h:18},
+  {id:"limeil",name:"Limeil-Brévannes",cx:510,cy:464,w:36,h:20},
+  {id:"saint-maur",name:"Saint-Maur-des-F.",cx:508,cy:428,w:38,h:22},
+  {id:"bonneuil",name:"Bonneuil-s-Marne",cx:494,cy:470,w:34,h:20},
+  {id:"sucy",name:"Sucy-en-Brie",cx:534,cy:448,w:32,h:20},
+  {id:"chennevieres",name:"Chennevières-s-M.",cx:542,cy:414,w:38,h:20},
+  {id:"ormesson",name:"Ormesson-s-Marne",cx:546,cy:436,w:36,h:18},
+  {id:"la-queue-en-brie",name:"La Queue-en-Brie",cx:560,cy:396,w:34,h:18},
+  {id:"noiseau",name:"Noiseau",cx:540,cy:468,w:28,h:16},
+  {id:"boissy",name:"Boissy-St-Léger",cx:532,cy:486,w:36,h:18},
+  {id:"marolles",name:"Marolles-en-Brie",cx:556,cy:462,w:34,h:18},
+  {id:"plessis-trevise",name:"Le Plessis-Trév.",cx:556,cy:396,w:34,h:18},
+];
+
+const selected = new Set();
+const labelMap = {};
+const svg = document.getElementById('map');
+
+zones.forEach(z => {
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','zone');
+  g.dataset.id = z.id;
+  g.dataset.name = z.name;
+  g.setAttribute('transform',`translate(${z.cx},${z.cy})`);
+
+  const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('x', -z.w/2);
+  rect.setAttribute('y', -z.h/2);
+  rect.setAttribute('width', z.w);
+  rect.setAttribute('height', z.h);
+  rect.setAttribute('rx','3');
+  g.appendChild(rect);
+
+  const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+  text.setAttribute('class','zone-label');
+  text.setAttribute('x','0');
+  text.setAttribute('y','0');
+  text.textContent = z.name.length > 14 ? z.name.substring(0,13)+'.' : z.name;
+  g.appendChild(text);
+  labelMap[z.id] = text;
+
+  g.addEventListener('click', () => {
+    if(selected.has(z.id)){
+      selected.delete(z.id);
+      g.classList.remove('selected');
+      text.style.fill = '';
+    } else {
+      selected.add(z.id);
+      g.classList.add('selected');
+      text.style.fill = '#fff';
+    }
+    updateCount();
+  });
+
+  svg.appendChild(g);
+});
+
+function updateCount(){
+  const n = selected.size;
+  document.getElementById('count-badge').textContent = n + ' zone' + (n > 1 ? 's' : '') + ' sélectionnée' + (n > 1 ? 's' : '');
+}
+
+async function handleSubmit(){
+  const name = document.getElementById('name-input').value.trim();
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('status');
+
+  if(!name){
+    status.className = 'error';
+    status.textContent = 'Merci d\'entrer ton prénom.';
+    return;
+  }
+  if(selected.size === 0){
+    status.className = 'error';
+    status.textContent = 'Sélectionne au moins une zone sur la carte.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Envoi en cours…';
+  status.className = '';
+  status.textContent = '';
+
+  const zonesSelected = [...selected].map(id => zones.find(z => z.id === id)?.name).filter(Boolean);
+
+  const payload = {
+    records: [{
+      fields: {
+        "Prénom": name,
+        "Zones": zonesSelected.join(', '),
+        "Nombre de zones": selected.size,
+        "Date": new Date().toISOString().split('T')[0]
+      }
+    }]
+  };
+
+  try {
+    const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok){
+      const err = await res.json();
+      throw new Error(err.error?.message || 'Erreur Airtable');
+    }
+
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'flex';
+
+  } catch(e) {
+    status.className = 'error';
+    status.textContent = 'Erreur : ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Valider mes zones →';
+  }
+}
+</script>
+</body>
+</html>
