@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Running club — Zones de course</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=DM+Sans:wght@200;300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
-    --bg:#ffffff; --surface:#ffffff; --text:#1a1a2e; --muted:#7a8a89;
-    --accent:#F230B9; --accent-light:#fde8f8; --accent-hover:#c41e97;
-    --border:#c8f0ee; --radius:14px;
+    --bg:#F7F4EF; --surface:#ffffff; --text:#1C1917; --muted:#9E9A94;
+    --accent:#3DBFB8; --accent-light:#E8F7F6; --accent-hover:#2aa39d;
+    --border:#E0DDD6; --radius:14px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden}
-  body{font-family:"Poppins",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+  body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
 
   /* HEADER */
   .top-bar{
@@ -26,7 +26,7 @@
         text-align:center;
   }
   .eyebrow{font-family:"Poppins",monospace;font-size:16px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
-  h1{font-size:28px;font-weight:700;line-height:1.2;margin-bottom:4px;font-family:"Playfair Display",serif !important}
+  h1{font-size:28px;font-weight:700;line-height:1.2;margin-bottom:4px;font-family:"Cormorant Garamond",serif !important}
   h1 em{font-style:italic}
   .subtitle{font-size:12px;color:var(--muted);line-height:1.5}
 
@@ -35,9 +35,9 @@
   .name-row label{font-size:11px;font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0;white-space:nowrap}
   input[type=text]{
     flex:1;padding:9px 12px;
-    font-family:"Poppins",sans-serif;font-size:16px;
+    font-family:"DM Sans",sans-serif;font-size:16px;
     border:none;border-radius:8px;
-    background:#f0f0f0;color:var(--text);outline:none;
+    background:#EEEBE4;color:var(--text);outline:none;
     -webkit-appearance:none;
   }
   input[type=text]:focus{border-color:var(--accent)}
@@ -54,7 +54,7 @@
   /* OVERLAYS ON MAP */
   .count-pill{
     position:absolute;bottom:16px;left:12px;z-index:999;
-    background:#5fd3c8;color:#fff;
+    background:#3DBFB8;color:#F7F4EF;
     font-family:"Playfair Display",monospace;font-size:12px;
     padding:6px 14px;border-radius:20px;pointer-events:none;
     box-shadow:0 2px 8px rgba(0,0,0,.15);
@@ -68,7 +68,7 @@
   }
   .leg{display:flex;align-items:center;gap:7px}
   .leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
-  .leg-dot.d{background:#d0f5f3;border:1px solid #5fd3c8}
+  .leg-dot.d{background:#E8F7F6;border:1px solid #C0E8E5}
   .leg-dot.s{background:#5fd3c8;border:1px solid #3db8ae}
 
   /* BOTTOM BAR */
@@ -81,8 +81,8 @@
   }
   .submit-btn{
     display:block;width:100%;padding:16px;
-    background:#5fd3c8;color:#fff;
-    font-family:"Poppins",sans-serif;font-size:16px;font-weight:500;
+    background:#3DBFB8;color:#F7F4EF;
+    font-family:"DM Sans",sans-serif;font-size:16px;font-weight:500;
     border:none;border-radius:var(--radius);cursor:pointer;
     transition:background .2s;letter-spacing:.02em;
     -webkit-appearance:none;
@@ -101,18 +101,18 @@
     animation:fadeIn .4s ease;
   }
   @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-  .checkmark{width:64px;height:64px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1.5rem;color:var(--accent)}
+  .checkmark{width:64px;height:64px;background:#E8F7F6;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1.5rem;color:var(--accent)}
   .success-screen h2{font-size:24px;font-weight:400;margin-bottom:10px}
   .success-screen p{font-size:15px;color:var(--muted);line-height:1.6;max-width:280px}
 
 
   .fields-wrap{background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
   .fields-row{display:flex;align-items:center;gap:12px;padding:8px 16px;justify-content:center;}
-  .fields-row label{font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap;font-family:'Poppins',sans-serif;}
-  .fields-row input[type=text]{flex:1;max-width:200px;padding:8px 12px;font-family:'Poppins',sans-serif;font-size:15px;border:none;border-radius:8px;background:#f0f0f0;color:var(--text);outline:none;}
-  .day-option{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:var(--text);font-family:'Poppins',sans-serif;}
-  .day-option input[type=checkbox]{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:5px;border:2px solid #5fd3c8;background:#fff;cursor:pointer;transition:background .15s;flex-shrink:0;}
-  .day-option input[type=checkbox]:checked{background:#5fd3c8;border-color:#5fd3c8;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:70%;}
+  .fields-row label{font-size:12px;font-weight:500;color:var(--muted);white-space:nowrap;font-family:'DM Sans',sans-serif;}
+  .fields-row input[type=text]{flex:1;max-width:200px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:15px;border:none;border-radius:8px;background:#EEEBE4;color:var(--text);outline:none;}
+  .day-option{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;}
+  .day-option input[type=checkbox]{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:5px;border:2px solid #3DBFB8;background:#fff;cursor:pointer;transition:background .15s;flex-shrink:0;}
+  .day-option input[type=checkbox]:checked{background:#3DBFB8;border-color:#3DBFB8;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:70%;}
   .leaflet-control-attribution{display:none}
 
   .station-tooltip { font-family: 'Poppins', sans-serif; font-size: 11px; padding: 4px 8px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
@@ -194,9 +194,9 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png
 
 
 
-const sDefault  = { fillColor:'#d0f5f3', fillOpacity:0.55, color:'#5fd3c8', weight:1.5 };
-const sHover    = { fillColor:'#5fd3c8', fillOpacity:0.80, color:'#3db8ae', weight:2.0 };
-const sSelected = { fillColor:'#5fd3c8', fillOpacity:0.68, color:'#3db8ae', weight:2.2 };
+const sDefault  = { fillColor:'#E8F7F6', fillOpacity:0.55, color:'#9E9A94', weight:1.5 };
+const sHover    = { fillColor:'#3DBFB8', fillOpacity:0.80, color:'#7EC8C3', weight:2.0 };
+const sSelected = { fillColor:'#3DBFB8', fillOpacity:0.68, color:'#7EC8C3', weight:2.2 };
 
 function updateCount() {
   const n = selected.size;
@@ -218,7 +218,7 @@ function makeLabel(layer, name) {
     interactive: false,
     icon: L.divIcon({
       className: '',
-      html: `<span style="font-family:'Poppins',sans-serif;font-size:${fs}px;font-weight:300;color:${isSel ? 'rgba(255,255,255,0.8)' : 'rgba(40,36,28,0.4)'};letter-spacing:.04em;white-space:nowrap;display:block;transform:translateX(-50%);pointer-events:none;text-align:center;">${name}</span>`,
+      html: `<span style="font-family:'DM Sans',sans-serif;font-size:${fs}px;font-weight:300;color:${isSel ? 'rgba(255,255,255,0.8)' : 'rgba(40,36,28,0.4)'};letter-spacing:.04em;white-space:nowrap;display:block;transform:translateX(-50%);pointer-events:none;text-align:center;">${name}</span>`,
       iconSize:[0,0], iconAnchor:[0,0]
     })
   });
